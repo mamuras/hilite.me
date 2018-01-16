@@ -1,0 +1,77 @@
+data()
+data(trees)
+drzewa <- trees
+drzewa <- as.data.frame(drzewa)
+str(drzewa)
+head(drzewa)
+
+#przeliczanie jednostek (in, ft, cubic ft) -> SI (m, m, m3)
+drzewa$Girth <- drzewa$Girth * 2.54/100   #1in = 2.54cm
+drzewa$Height <- drzewa$Height * 0.3048   #1ft = 30.48cm
+drzewa$Volume <- drzewa$Volume * 0.0283   #1cubic ft = 0.0283m3
+head(drzewa)
+
+paste(' Najwieksza wysokosc:',
+rownames(drzewa)[which.max(drzewa$Height)],
+drzewa$Height[which.max(drzewa$Height)]
+)
+paste(' najmniejszy obwod:',
+rownames(drzewa)[which.min(drzewa$Girth)],
+drzewa$Girth[which.min(drzewa$Girth)]
+)
+summary(drzewa)
+var(drzewa)
+sd(drzewa$Volume)
+sd(drzewa$Height)
+sd(drzewa$Girth)
+quantile(drzewa$Volume)
+quantile(drzewa$Height)
+pdf('Volume.pdf')
+boxplot(drzewa$Volume, main=' objetosc drzew [m]', col='ivory2')
+dev.off()
+
+pdf('Height.pdf')
+par(mfrow=c(1,2))
+hist(drzewa$Height, prob=T, main='wysokosc drzew czarnej wisni [m]', col='red', xlab='wysokosc [m]', ylab='gestosc prawdopodobienstwa [bezwym.]')
+lines(density(drzewa$Height), lwd=2, col='green')
+hist(log10(drzewa$Height), prob=T, col='pink2', main='/wysokosc drzew czarnej wisni [m]', xlab='wysokosc log10 [m]', ylab='gestosc prawdopodobienstwa [bezwym.]')
+lines(density(log10(drzewa$Height)), lwd=2, col='plum')
+curve(dnorm(x, mean(log10(drzewa$Height)), sd(log10(drzewa$Height))), lwd=2, col='blue', add=T)
+dev.off()
+
+pdf('Volume.pdf')
+par(mfrow=c(1,2))
+hist(drzewa$Volume, prob=T, breaks=4, main='objetosc drzew czarnej wisni [m3]', col='green', xlab='objetosc [m3]', ylab='gestosc prawdopodobienstwa [bezwym.]')
+lines(density(drzewa$Volume), col='purple', lwd=2)
+dev.off()
+
+shapiro.test(drzewa$Volume)
+shapiro.test(log10(drzewa$Volume))
+
+shapiro.test(drzewa$Girth)
+shapiro.test(log(drzewa$Girth))
+
+pdf('dystr.pdf')
+a <- drzewa$Height
+ecdf(a)
+plot(ecdf(a), main='Dystrybuanta dla wysokości', xlab='Wysokosc drzew [m]', ylab='funkcja zależna od wysokości')
+dev.off()
+
+
+#Testowanie hipotez statystycznych
+#sposób 1
+xpr <- 23.16 # srednia z proby
+mu0 <- 25 # srednia teoretyczna
+sigma <- 1.942129 # odchylenie standardowe populacji
+n <- 31 # liczba elementow proby
+
+z <- ( xpr - mu0 ) / ( sigma / sqrt ( n ) ) # statystyka testowa
+z
+alpha <- .05
+z.alpha <- qnorm (1 - alpha )
+-z.alpha # wartosc krytyczna
+
+# sposob 2
+pval <- pnorm ( z ) # p- wartosc
+pval  # p- wartosc << alfa -> H0 odrzucamy
+detach(drzewa)
